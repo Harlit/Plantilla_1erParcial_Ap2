@@ -51,60 +51,39 @@ class RegistroViewModel @Inject constructor(
         }
     }
 
-    fun validateDeudor() {
-        if (deudor.isNullOrEmpty())
-        {
-            throw IllegalArgumentException("El campo Deudor es requerido")
-        }
-        else
-        {
-            hasDeudorError = false
+    fun validateField(value: String?, fieldName: String): Boolean {
+        if (value.isNullOrEmpty()) {
+            throw IllegalArgumentException("El campo $fieldName es requerido")
+        } else {
+            return false
         }
     }
 
-    fun validateConcepto(){
-        if(concepto.isNullOrEmpty())
-        {
-            throw IllegalArgumentException("El concepto es requerido")
-        }
-        else
-        {
-            hasConceptoError = false
-        }
-    }
-
-    fun validateMonto(){
-        if (monto.isNullOrEmpty())
-        {
-            throw IllegalArgumentException("El monto es requerido")
-        }
-        else
-        {
-            hasMontoError = false
-        }
+    fun validateInputs() {
+        hasDeudorError = validateField(deudor, "Deudor")
+        hasConceptoError = validateField(concepto, "Concepto")
+        hasMontoError = validateField(monto, "Monto")
     }
 
     fun insertar() {
         try {
-            validateDeudor()
-            validateConcepto()
-            validateMonto()
+            validateInputs()
             val prestamos = PrestamosEntity(
-                deudor = deudor,
-                concepto = concepto,
-                monto = monto .toDoubleOrNull() ?: 0.0
+                deudor = deudor!!,
+                concepto = concepto!!,
+                monto = monto!!.toDoubleOrNull() ?: 0.0
             )
             viewModelScope.launch(Dispatchers.IO) {
                 Repositorioprestamos.insert(prestamos)
                 Limpiar()
             }
-        } catch (ex: IllegalArgumentException)
-        {
+        } catch (ex: IllegalArgumentException) {
             hasDeudorError = true
             hasConceptoError = true
             hasMontoError = true
         }
     }
+
     private fun Limpiar(){
         deudor = ""
         concepto = ""
